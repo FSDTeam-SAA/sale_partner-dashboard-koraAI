@@ -122,18 +122,23 @@ export function Sidebar() {
       <aside
         className={cn(
           "z-50 flex h-dvh flex-col border-r border-[#14304c] bg-[#061326] transition-[transform,width] duration-300",
-          collapsed ? "w-16" : "w-[264px]",
+          collapsed ? "w-[72px]" : "w-[264px]",
           "fixed inset-y-0 left-0 lg:relative lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div
           className={cn(
-            "flex items-center gap-3 px-6 py-[clamp(0.75rem,2.4dvh,1.5rem)]",
-            collapsed && "justify-center px-2",
+            "relative flex items-center gap-3 px-6 py-[clamp(0.75rem,2.4dvh,1.5rem)]",
+            collapsed && "h-20 justify-center px-0 py-4",
           )}
         >
-          <div className="relative flex h-[clamp(2rem,4dvh,2.5rem)] w-[clamp(2rem,4dvh,2.5rem)] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#071321] shadow-[0_0_18px_rgba(0,183,255,0.35)] ring-1 ring-cyan-400/25">
+          <div
+            className={cn(
+              "relative flex h-[clamp(2rem,4dvh,2.5rem)] w-[clamp(2rem,4dvh,2.5rem)] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#071321] shadow-[0_0_18px_rgba(0,183,255,0.35)] ring-1 ring-cyan-400/25",
+              collapsed && "h-11 w-11 rounded-2xl",
+            )}
+          >
             <Image
               src="/kora-logo.png"
               alt="KoraAI"
@@ -167,7 +172,8 @@ export function Sidebar() {
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
               "ml-auto hidden h-8 w-8 items-center justify-center rounded-full border border-[#14304c] text-[#8fa0b6] transition-colors hover:text-gray-300 lg:inline-flex",
-              collapsed && "ml-0",
+              collapsed &&
+                "absolute right-[-0.75rem] top-1/2 z-10 ml-0 h-6 w-6 -translate-y-1/2 bg-[#061326] shadow-[0_0_12px_rgba(0,0,0,0.35)]",
             )}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -193,9 +199,9 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "mx-2 mb-0.5 flex items-center gap-3 rounded-lg px-3 py-[clamp(0.45rem,1.25dvh,0.625rem)] text-[clamp(0.75rem,1.45dvh,0.875rem)] transition-all",
+                  "relative mx-2 mb-0.5 flex items-center gap-3 rounded-lg px-3 py-[clamp(0.45rem,1.25dvh,0.625rem)] text-[clamp(0.75rem,1.45dvh,0.875rem)] transition-all before:absolute before:left-[-0.55rem] before:top-1/2 before:h-7 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-transparent before:transition-colors",
                   active
-                    ? "border border-[#126dff] bg-[#07337a] text-[#d9ecff] shadow-[inset_0_0_24px_rgba(17,104,255,0.22)]"
+                    ? "text-[#d9ecff] before:bg-[#126dff]"
                     : "text-[#c4ccda] hover:bg-[#0b1e36] hover:text-gray-100",
                   collapsed && "justify-center px-2",
                 )}

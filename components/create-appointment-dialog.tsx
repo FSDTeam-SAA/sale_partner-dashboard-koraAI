@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDays, Clock } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, Clock, Search } from "lucide-react";
 import { DatePickerPopover } from "@/components/date-picker-popover";
 import { TimePickerPopover } from "@/components/time-picker-popover";
 
@@ -176,6 +176,8 @@ export function CreateAppointmentDialog({
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [assignedUserOpen, setAssignedUserOpen] = useState(false);
+  const [assignedUserSearch, setAssignedUserSearch] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { data: customersResponse } = useQuery({
@@ -204,6 +206,21 @@ export function CreateAppointmentDialog({
       employeesResponse?.data ||
       employeesResponse
   );
+  const assignedUserOptions = employeeOptions.map((item: any, index: number) => {
+    const user = item.userId || item.user || item;
+    const id = String(user._id || item._id || item.id || index);
+    const name = user.name || item.name || user.email || "User";
+    const email = user.email || item.email || "";
+    const role = String(user.role || item.role || "calendar user").replace(/_/g, " ");
+    const label = `${name} - ${role}`;
+    const searchText = `${name} ${email} ${role}`.toLowerCase();
+
+    return { id, label, searchText };
+  });
+  const filteredAssignedUserOptions = assignedUserOptions.filter((option) =>
+    option.searchText.includes(assignedUserSearch.trim().toLowerCase())
+  );
+  const selectedAssignedUser = assignedUserOptions.find((option) => option.id === employee);
 
   const resetForm = () => {
     const current = new Date();
@@ -222,12 +239,16 @@ export function CreateAppointmentDialog({
     setLocation(DEFAULT_LOCATION);
     setNotes("");
     setColor(COLOR_SWATCHES[0]);
+    setAssignedUserOpen(false);
+    setAssignedUserSearch("");
   };
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       resetForm();
       setSubmitError(null);
+      setAssignedUserOpen(false);
+      setAssignedUserSearch("");
     }
     onOpenChange(nextOpen);
   };
@@ -335,29 +356,66 @@ export function CreateAppointmentDialog({
             {/* Assigned User */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-gray-300">Assigned User</label>
-              <Select value={employee} onValueChange={setEmployee}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select partner or employee..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {employeeOptions.length === 0 ? (
-                    <SelectItem value="no-users" disabled>
-                      No users found
-                    </SelectItem>
-                  ) : null}
-                  {employeeOptions.map((item: any, index: number) => {
-                    const user = item.userId || item.user || item;
-                    const id = String(user._id || item._id || item.id || index);
-                    const name = user.name || item.name || user.email || "User";
-                    const role = user.role || item.role || "calendar user";
-                    return (
-                      <SelectItem key={id} value={id}>
-                        {name} - {String(role).replace(/_/g, " ")}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+              <div
+                className="relative"
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setAssignedUserOpen(false);
+                  }
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setAssignedUserOpen((current) => !current)}
+                  className="flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-[#2a3547] bg-[#0d1526] px-3 py-2 text-left text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <span className={selectedAssignedUser ? "truncate" : "truncate text-gray-500"}>
+                    {selectedAssignedUser?.label || "Select partner or employee..."}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                </button>
+                {assignedUserOpen ? (
+                  <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-[#2a3547] bg-[#0d1a2d] text-gray-200 shadow-lg">
+                    <div className="border-b border-[#1e2d40] p-2">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-500" />
+                        <input
+                          value={assignedUserSearch}
+                          onChange={(event) => setAssignedUserSearch(event.target.value)}
+                          placeholder="Search users..."
+                          className="h-9 w-full rounded-md border border-[#2a3547] bg-[#0d1526] pl-9 pr-3 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto p-1">
+                      {assignedUserOptions.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-gray-500">No users found</div>
+                      ) : null}
+                      {assignedUserOptions.length > 0 && filteredAssignedUserOptions.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-gray-500">No matching users</div>
+                      ) : null}
+                      {filteredAssignedUserOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            setEmployee(option.id);
+                            setAssignedUserOpen(false);
+                            setAssignedUserSearch("");
+                          }}
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none hover:bg-[#1e2d40] focus:bg-[#1e2d40]"
+                        >
+                          <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                            {employee === option.id ? <Check className="h-4 w-4" /> : null}
+                          </span>
+                          <span className="truncate">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             {/* Date */}
