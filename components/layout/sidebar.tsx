@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -133,21 +132,6 @@ export function Sidebar() {
             collapsed && "h-20 justify-center px-0 py-4",
           )}
         >
-          <div
-            className={cn(
-              "relative flex h-[clamp(2rem,4dvh,2.5rem)] w-[clamp(2rem,4dvh,2.5rem)] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#071321] shadow-[0_0_18px_rgba(0,183,255,0.35)] ring-1 ring-cyan-400/25",
-              collapsed && "h-11 w-11 rounded-2xl",
-            )}
-          >
-            <Image
-              src="/kora-logo.png"
-              alt="KoraAI"
-              width={40}
-              height={40}
-              className="h-full w-full object-cover"
-              priority
-            />
-          </div>
           {!collapsed && (
             <div>
               <span className="text-[clamp(1.1rem,2.6dvh,1.75rem)] font-semibold leading-none text-white">
