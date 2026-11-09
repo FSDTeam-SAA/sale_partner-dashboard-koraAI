@@ -1,2 +1,2 @@
-"use client";
-export { default } from "@/components/calendar-page";
+import SalesExperience from "@/components/novya/experience";
+export default SalesExperience;

@@ -12,7 +12,7 @@ const loginUrl = (req: NextRequest, error: string) => {
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname.startsWith("/verify-otp") || pathname.startsWith("/reset-password");
+  const isAuthPage = ["/login","/forgot-password","/verify-otp","/reset-password","/activate"].some(p=>pathname===p);
 
   if (!isLoggedIn && !isAuthPage) return NextResponse.redirect(loginUrl(req, "session_required"));
   if (isLoggedIn && isAuthPage) return NextResponse.redirect(new URL("/dashboard", req.url));

@@ -17,6 +17,9 @@ function mapAuthErrorCode(message?: string) {
       return "wrong_password";
     case "Email not verified":
       return "email_not_verified";
+    case "Valid fresh second factor required":
+    case "Second factor already used":
+      return "mfa_required";
     default:
       return "invalid_credentials";
   }
@@ -29,8 +32,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        mfaCode: { label: "Authenticator code", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = String(credentials?.email ?? "").trim();
         const password = String(credentials?.password ?? "");
 
@@ -39,20 +43,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "User-Agent": request.headers.get("user-agent") || "NOVYA web",
+              },
+              body: JSON.stringify({
+                email,
+                password,
+                mfaCode: credentials?.mfaCode,
+              }),
+            },
+          );
           const data = await res.json().catch(() => null);
 
           if (!res.ok || !data?.success || !data?.data) {
-            throw new DashboardCredentialsError(mapAuthErrorCode(data?.message));
+            throw new DashboardCredentialsError(
+              mapAuthErrorCode(data?.message),
+            );
           }
 
-          const role = normalizeRole(data.data.role);
+          const contextResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/sales-experience/context`,
+            {
+              headers: { Authorization: `Bearer ${data.data.accessToken}` },
+              cache: "no-store",
+            },
+          );
+          const context = await contextResponse.json().catch(() => null);
+          const role = normalizeRole(context?.data?.role);
 
-          if (!isSalePartnerRole(role)) {
+          if (!contextResponse.ok || !isSalePartnerRole(role)) {
             throw new DashboardCredentialsError("role_not_allowed");
           }
 
@@ -77,7 +101,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token._id = user.id;
         token.name = user.name;
@@ -86,6 +110,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.profileImage = user.profileImage;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
+      }
+      if (trigger === "update" && typeof token.accessToken === "string") {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/sales-experience/account`,
+            {
+              headers: { Authorization: `Bearer ${token.accessToken}` },
+              cache: "no-store",
+            },
+          );
+          const result = await response.json();
+          if (response.ok && result.success && result.data) {
+            token.name = result.data.name;
+            token.profileImage = result.data.profileImage;
+          }
+        } catch {
+          // Retain the current display profile when the backend is unavailable.
+        }
       }
       return token;
     },
