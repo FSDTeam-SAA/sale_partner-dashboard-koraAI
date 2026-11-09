@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import {
   Avatar,
@@ -304,7 +304,7 @@ export function CalendarPage() {
                     </div>
                   ))}
                   {Array.from({ length: 12 }, (_, i) => i + 7).map((hour) => (
-                    <div key={hour} style={{ display: "contents" }}>
+                    <Fragment key={hour}>
                       <div>{String(hour).padStart(2, "0")}:00</div>
                       {days.map((d) => (
                         <div key={d.toISOString()}>
@@ -317,7 +317,7 @@ export function CalendarPage() {
                             .map(eventButton)}
                         </div>
                       ))}
-                    </div>
+                    </Fragment>
                   ))}
                 </div>
               </div>
