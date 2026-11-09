@@ -8,6 +8,7 @@ const api = axios.create({
 
 const publicApiPaths = [
   "/auth/login",
+  "/auth/activate-sales",
   "/auth/forget-password",
   "/auth/verify-reset-otp",
   "/auth/reset-password",
