@@ -5,5 +5,5 @@ export function normalizeRole(role?: string | null) {
 }
 
 export function isSalePartnerRole(role?: string | null) {
-  return normalizeRole(role) === SALE_PARTNER_ROLE;
+  return [SALE_PARTNER_ROLE, "sales_partner", "sales_lead"].includes(normalizeRole(role));
 }

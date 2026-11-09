@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# NOVYA Sales Partner Dashboard
 
-## Getting Started
+Next.js web client for Sales Partners and Sales Team Leads. It uses the NOVYA dark design reference, personal Settings and avatar-owned Account controls. Sales, Office and Media remain accessible; the Workspace menu has been removed.
 
-First, run the development server:
+## Local development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Run `npm install`, configure `.env` and start `npm run dev`. Open http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required configuration:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `NEXT_PUBLIC_BASE_URL`: backend API root including `/api/v1`.
+- `AUTH_SECRET`: a persistent NextAuth secret.
+- `AUTH_URL` / `NEXTAUTH_URL`: the web origin when required by the hosting environment.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Use the backend's authorized Sales account provisioning or invitation activation. Login requires an active canonical Sales staff membership; there is no public role-selection signup. Never commit credentials.
 
-## Learn More
+## Verification
 
-To learn more about Next.js, take a look at the following resources:
+- `npm test` checks the safe spreadsheet formula evaluator.
+- `npx tsc --noEmit --incremental false` checks types.
+- `npm run lint` checks source lint rules.
+- `npm run build` creates and validates the production build.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Implementation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The route dispatcher is `components/novya/experience.tsx`; shared layout and controls are in `shell.tsx` and `ui.tsx`. Screen families are grouped by domain in `components/novya`. The theme and responsive rules are in `app/novya.css`. `lib/sales.ts` calls protected `/sales-experience` APIs through the existing authenticated client. Learning, security, notifications and connected email reuse their existing services.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The backend contract and integration configuration are documented in `../backendKoraAi/SALES_DASHBOARD_API.md`. The workspace report at `../output/reports/sales-partner-dashboard-implementation.md` records coverage, checks and validation limits. Approved brand assets, published courses, assigned territories and external integrations are supplied by the backend; the application does not seed example production metrics.
